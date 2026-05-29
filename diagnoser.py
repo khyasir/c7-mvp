@@ -11,6 +11,17 @@ whether diagnose() is faked or real.
 """
 
 
+def validate(description):
+    """Return an error message if the input is not usable, else None.
+
+    This is the input filter. An interface that accepts anything has no contract.
+    """
+    text = (description or "").strip()
+    if len(text) < 20:
+        return "Please describe the task in a sentence or two, not just a few words."
+    return None
+
+
 def diagnose(description):
     """Take a task description, return a diagnosis.
 
@@ -18,6 +29,10 @@ def diagnose(description):
     example so the interface has something real to display. Later, the body of
     this function becomes a real LLM call. The inputs and outputs stay the same.
     """
+    error = validate(description)
+    if error:
+        return {"ok": False, "error": error}
+
     # Hard-coded sample answer. Pretend the model wrote this.
     fake_answer = {
         "trigger": "Monday morning, before the team review",
