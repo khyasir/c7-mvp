@@ -2,7 +2,7 @@ import os
 import gradio as gr
 import requests
 
-BACKEND_URL = os.environ.get("BACKEND_URL", "http://127.0.0.1:8000/diagnose")
+BACKEND_URL = os.environ.get("BACKEND_URL", "https://c7-mvp-95fi.onrender.com/diagnose")
 
 
 def diagnose(message, history):
