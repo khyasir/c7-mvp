@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
 from groq import Groq
+from pydantic import BaseModel
 from supabase import create_client
 
 # Read SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GROQ_API_KEY from the .env file
@@ -48,9 +49,16 @@ def call_groq(user_content: str) -> str:
     return completion.choices[0].message.content
 
 
+class DiagnoseRequest(BaseModel):
+    workflow_description: str = "hi"
+
+
 @app.post("/diagnose", response_class=PlainTextResponse)
-def diagnose(body: dict):
-    user_content = body.get("workflow_description", "")
+def diagnose(body: DiagnoseRequest):
+    user_content = body.workflow_description
+    print ('user_content', user_content)
+    print ('user_content', user_content)
+    print ('user_content', user_content)
 
     # Four beats: open a conversation, store the question, think, store the answer.
     # We wrap MEMORY around last week's brain — we don't replace it.
@@ -80,7 +88,7 @@ def diagnose(body: dict):
 
     # The plan still comes back as plain text, so the L06 frontend keeps working.
     # The new conversation_id is also returned in a header for anyone who wants it.
-    return PlainTextResponse(plan, headers={"X-Conversation-Id": conversation_id})
+    return PlainTextResponse(plan, headers={"X-Conversation-Id": str(conversation_id)})
 
 
 @app.get("/conversations/{conversation_id}/messages")
