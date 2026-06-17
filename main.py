@@ -51,23 +51,26 @@ def call_groq(user_content: str) -> str:
 
 class DiagnoseRequest(BaseModel):
     workflow_description: str = "hi"
+    # When the frontend already has a conversation going, it sends the id back so
+    # we append to that conversation instead of opening a new one every turn.
+    conversation_id: int | None = None
 
 
 @app.post("/diagnose", response_class=PlainTextResponse)
 def diagnose(body: DiagnoseRequest):
     user_content = body.workflow_description
-    print ('user_content', user_content)
-    print ('user_content', user_content)
-    print ('user_content', user_content)
 
     # Four beats: open a conversation, store the question, think, store the answer.
     # We wrap MEMORY around last week's brain — we don't replace it.
 
-    # 1. open a conversation (the domain-model "conversation" gets a row)
-    convo = supabase.table("conversations").insert(
-        {"title": user_content[:60]}
-    ).execute()
-    conversation_id = convo.data[0]["id"]
+    # 1. reuse the conversation the frontend is already in, or open a new one
+    if body.conversation_id is not None:
+        conversation_id = body.conversation_id
+    else:
+        convo = supabase.table("conversations").insert(
+            {"title": user_content[:60]}
+        ).execute()
+        conversation_id = convo.data[0]["id"]
 
     # 2. store what the user said
     supabase.table("messages").insert({
